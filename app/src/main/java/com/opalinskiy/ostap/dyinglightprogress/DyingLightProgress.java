@@ -26,15 +26,15 @@ import android.view.animation.AnimationSet;
 import android.widget.RelativeLayout;
 
 
-public class DyingLightProgress extends RelativeLayout implements ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener {
+public class DyingLightProgress extends RelativeLayout
+        implements ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener {
+
     private View viewA;
     private View viewB;
     private View viewC;
     private View viewD;
     private View viewE;
     private Context context;
-    private int displayWidth;
-    private int displayHeight;
     private Paint pShape;
     private Paint pBackground;
     private int viewColor;
@@ -44,10 +44,8 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
     private int bigViewSize;
     private int viewWidth;
     private int viewHeight;
-    private Handler handler;
     private boolean runProgress;
     private float pause;
-
     private long speedAnim = 300;
 
     public DyingLightProgress(Context context) {
@@ -61,9 +59,7 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         this.context = context;
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
-                attrs,
-                R.styleable.DyingLightProgress,
-                0, 0);
+                attrs, R.styleable.DyingLightProgress, 0, 0);
         try {
             viewColor = a.getInteger(R.styleable.DyingLightProgress_viewColor, Color.RED);
             backgroundColor = a.getInteger(R.styleable.DyingLightProgress_backgroundColor, Color.WHITE);
@@ -118,7 +114,6 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         Log.d("TAG", "onMeasure()");
     }
 
-
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void init() {
         runProgress = true;
@@ -137,10 +132,6 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         pBackground.setColor(backgroundColor);
         pBackground.setStyle(Paint.Style.FILL);
 
-        Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
-        displayWidth = display.getWidth();
-        displayHeight = display.getHeight();
-
         // left, top
         viewA = new View(context);
         // right top
@@ -152,23 +143,13 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         // big center view
         viewE = new View(context);
 
-//        ratio = baseRatio / speedAnim;
-
-        handler = new Handler();
-
         final ViewTreeObserver observer = this.getViewTreeObserver();
         observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             public void onGlobalLayout() {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
                     observer.removeOnGlobalLayoutListener(this);
                 }
-
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        playAnimation();
-                    }
-                });
+                playAnimation();
             }
         });
     }
@@ -246,7 +227,7 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
     @NonNull
     private ObjectAnimator getObjectAnimatorAlpha(View viewA, float v, float v2, float v3) {
         ObjectAnimator animA = ObjectAnimator.ofFloat(viewA, View.ALPHA, v, v2, v3);
-        animA.setDuration((long) (speedAnim * pause * 6));
+        animA.setDuration((long) (speedAnim * pause * 8));
         animA.setRepeatCount(3);
         return animA;
     }
@@ -297,12 +278,7 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
     @Override
     public void onAnimationEnd(Animator animation) {
         if (runProgress) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    playAnimation();
-                }
-            });
+            playAnimation();
         }
     }
 
@@ -316,4 +292,7 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
 
     }
 
+    public void setRunProgress(boolean runProgress) {
+        this.runProgress = runProgress;
+    }
 }
