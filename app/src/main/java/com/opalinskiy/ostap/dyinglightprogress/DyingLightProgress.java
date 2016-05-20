@@ -42,12 +42,8 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
     private int backgroundColor;
     private int smallViewSize;
     private int bigViewSize;
-    private int animStepX;
-    private int animStepY;
     private int viewWidth;
     private int viewHeight;
-    private int baseRatio = 1500;
-    private float ratio;
     private Handler handler;
     private boolean runProgress;
     private float pause;
@@ -106,8 +102,6 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
 
         smallViewSize = Math.min(w, h) / 9;
         bigViewSize = Math.min(w, h) / 3;
-        animStepX = w / 2;
-        animStepY = h / 2;
 
         setViews(smallViewSize, RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.ALIGN_PARENT_TOP, viewA);
         setViews(smallViewSize, RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.ALIGN_PARENT_TOP, viewB);
@@ -130,7 +124,9 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         runProgress = true;
         pause = (float) 0.3;
         Log.d("TAG", "init");
+
         setWillNotDraw(false);
+
         pShape = new Paint();
         pShape.setColor(viewColor);
         pShape.setAntiAlias(true);
@@ -141,18 +137,22 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         pBackground.setColor(backgroundColor);
         pBackground.setStyle(Paint.Style.FILL);
 
-
         Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
         displayWidth = display.getWidth();
         displayHeight = display.getHeight();
 
+        // left, top
         viewA = new View(context);
+        // right top
         viewB = new View(context);
+        // left bottom
         viewC = new View(context);
+        // right bottom
         viewD = new View(context);
+        // big center view
         viewE = new View(context);
 
-        ratio = baseRatio / speedAnim;
+//        ratio = baseRatio / speedAnim;
 
         handler = new Handler();
 
@@ -163,19 +163,12 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
                     observer.removeOnGlobalLayoutListener(this);
                 }
 
-//                for (int i = 0; i < 4; i++) {
-//                    playAnimation();
-//                }
-
-                  playAnimation();
-
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         playAnimation();
                     }
                 });
-
             }
         });
     }
@@ -184,163 +177,82 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
 
         float bigViewCenterX = viewE.getX() + viewE.getWidth() / 2;
         float bigViewCenterY = viewE.getY() + viewE.getHeight() / 2;
+        long breakTime = (long) (speedAnim * pause);
+        float centerX = bigViewCenterX - smallViewSize / 2;
+        float centerY = bigViewCenterY - smallViewSize / 2;
+        float leftX = centerX - viewWidth / 2 + smallViewSize / 2;
+        float rightX = viewWidth - smallViewSize;
+        float topY = centerY - viewHeight / 2 + smallViewSize / 2;
+        float bottomY = viewHeight - smallViewSize;
 
-        float smallViewCenterX = bigViewCenterX - smallViewSize / 2;
-        float smallViewCenterY = bigViewCenterY - smallViewSize / 2;
+        // big view fading
+        ObjectAnimator eFade = getObjectAnimatorAlpha(viewE, 0.0f, 1.0f, 0.0f);
 
-        animateForward(smallViewCenterX, smallViewCenterY);
-    }
+        // reduction animation
+        ObjectAnimator cCenterY = getObjectAnimator(viewC, "y", centerY, 0);
 
-    private void animateForward(float smallViewCenterX, float smallViewCenterY) {
+        ObjectAnimator dCenterX = getObjectAnimator(viewD, "x", centerX, breakTime);
 
-        // fades big square
-        ObjectAnimator alphaAnim = ObjectAnimator.ofFloat(viewE, View.ALPHA, 0.0f, 1.0f, 0.0f);
-        alphaAnim.setDuration((long) (speedAnim * pause * 6));
-        alphaAnim.setRepeatCount(3);
+        ObjectAnimator aCenterY = getObjectAnimator(viewA, "y", centerY, breakTime * 2);
 
-        ObjectAnimator action1 = ObjectAnimator.ofFloat(viewC, "y", viewC.getY() + smallViewSize / 2 - animStepY);
-        action1.setDuration(speedAnim);
-        action1.addUpdateListener(this);
+        ObjectAnimator bCenterX = getObjectAnimator(viewB, "x", centerX, breakTime * 3);
 
-        ObjectAnimator action2 = getObjectAnimator(viewD, "x", animStepX - smallViewSize / 2, speedAnim, (long) (speedAnim * pause));
+        ObjectAnimator cCenterX = getObjectAnimator(viewC, "x", centerX, breakTime * 4);
 
-        ObjectAnimator action3 = getObjectAnimator(viewA, "y", animStepY - smallViewSize / 2, speedAnim, (long) (speedAnim * pause * 2));
+        ObjectAnimator dCenterY = getObjectAnimator(viewD, "y", centerY, breakTime * 5);
 
-//                ObjectAnimator.ofFloat(viewA, "y", animStepY - smallViewSize / 2);
-//        action3.setDuration(speedAnim);
-//        action3.setStartDelay((long) (speedAnim * pause * 2));
-//        action3.addUpdateListener(this);
+        ObjectAnimator aCenterX = getObjectAnimator(viewA, "x", centerX, breakTime * 6);
 
-        ObjectAnimator action4 =  getObjectAnimator(viewB, "x", (int) (viewB.getX() - animStepX + smallViewSize / 2), speedAnim, (long) (speedAnim * pause * 3));
+        ObjectAnimator bCenterY = getObjectAnimator(viewB, "y", centerY, breakTime * 7);
 
-//                ObjectAnimator.ofFloat(viewB, "x", viewB.getX() - animStepX + smallViewSize / 2);
-//        action4.setDuration(speedAnim);
-//        action4.setStartDelay((long) (speedAnim * pause * 3));
-//        action4.addUpdateListener(this);
+        //small view fading
+        ObjectAnimator aFade = getObjectAnimatorAlpha(viewA, 1.0f, 0.0f, 1.0f);
 
-        ObjectAnimator action5 =  getObjectAnimator(viewC, "x", (int) smallViewCenterX, speedAnim, (long) (speedAnim * pause * 4));
-//        ObjectAnimator.ofFloat(viewC, "x", smallViewCenterX);
-//        action5.setDuration(speedAnim);
-//        action5.setStartDelay((long) (speedAnim * pause * 4));
-//        action5.addUpdateListener(this);
+        ObjectAnimator bFade = getObjectAnimatorAlpha(viewB, 1.0f, 0.0f, 1.0f);
 
-        ObjectAnimator action6 = getObjectAnimator(viewD, "y", (int) smallViewCenterY, speedAnim, (long) (speedAnim * pause * 5));
+        ObjectAnimator cFade = getObjectAnimatorAlpha(viewC, 1.0f, 0.0f, 1.0f);
 
-//        ObjectAnimator.ofFloat(viewD, "y", smallViewCenterY);
-//        action6.setDuration(speedAnim);
-//        action6.setStartDelay((long) (speedAnim * pause * 5));
-//        action6.addUpdateListener(this);
+        ObjectAnimator dFade = getObjectAnimatorAlpha(viewD, 1.0f, 0.0f, 1.0f);
 
-        ObjectAnimator action7 = getObjectAnimator(viewA, "x", (int) smallViewCenterX, speedAnim, (long) (speedAnim * pause * 6));
-//                ObjectAnimator.ofFloat(viewA, "x", smallViewCenterX);
-//        action7.setDuration(speedAnim);
-//        action7.setStartDelay((long) (speedAnim * pause * 6));
-//        action7.addUpdateListener(this);
+        //expansion animation
+        ObjectAnimator cRight = getObjectAnimator(viewC, "x", rightX, 0);
 
-        ObjectAnimator action8 = getObjectAnimator(viewB, "y", (int) smallViewCenterY, (long) (speedAnim * pause * 7), (long) (speedAnim * pause * 7));
-//                ObjectAnimator.ofFloat(viewB, "y", smallViewCenterY);
-//        action8.setDuration(speedAnim);
-//        action8.setStartDelay((long) (speedAnim * pause * 7));
-//        action8.addUpdateListener(this);
+        ObjectAnimator dBottom = getObjectAnimator(viewD, "y", bottomY, breakTime);
 
-        ObjectAnimator animA = getObjectAnimatorAlpha(viewA, 1.0f, 0.0f);
+        ObjectAnimator aLeft = getObjectAnimator(viewA, "x", leftX, breakTime * 3);
 
-        ObjectAnimator animB = getObjectAnimatorAlpha(viewB, 1.0f, 0.0f);
-//                ObjectAnimator.ofFloat(viewB, View.ALPHA, 1.0f, 0.0f, 1.0f);
-//        animB.setDuration((long) (speedAnim * pause * 6));
-//        animB.setRepeatCount(3);
+        ObjectAnimator bTop = getObjectAnimator(viewB, "y", topY, breakTime * 4);
 
-        ObjectAnimator animC = getObjectAnimatorAlpha(viewC, 1.0f, 0.0f);
-//                ObjectAnimator.ofFloat(viewC, View.ALPHA, 1.0f, 0.0f, 1.0f);
-//        animC.setDuration((long) (speedAnim * pause * 6));
-//        animC.setRepeatCount(3);
+        ObjectAnimator cBottom = getObjectAnimator(viewC, "y", bottomY, breakTime * 5);
 
-        ObjectAnimator animD = getObjectAnimatorAlpha(viewD, 1.0f, 0.0f);
+        ObjectAnimator dLeft = getObjectAnimator(viewD, "x", leftX, breakTime * 7);
 
-//                ObjectAnimator.ofFloat(viewD, View.ALPHA, 1.0f, 0.0f, 1.0f);
-//        animD.setDuration((long) (speedAnim * pause * 6));
-//        animD.setRepeatCount(3);
+        ObjectAnimator aTop = getObjectAnimator(viewA, "y", topY, breakTime * 8);
 
-        ObjectAnimator actionBack1 = getObjectAnimator(viewC, "x", viewWidth - smallViewSize, speedAnim, 0);
-//                ObjectAnimator.ofFloat(viewC, "x", viewWidth - smallViewSize);
-//        actionBack1.setDuration(speedAnim);
-//        actionBack1.addUpdateListener(this);
+        ObjectAnimator bRight = getObjectAnimator(viewB, "x", rightX, (long) (speedAnim * pause * 8.5));
 
-        ObjectAnimator actionBack2 = getObjectAnimator(viewD, "y", viewHeight - smallViewSize, speedAnim, (long) (speedAnim * pause));
-
-//                ObjectAnimator.ofFloat(viewD, "y", viewHeight - smallViewSize);
-//        actionBack2.setDuration(speedAnim);
-//        actionBack2.setStartDelay((long) (speedAnim * pause));
-//        actionBack2.addUpdateListener(this);
-
-        ObjectAnimator actionBack3 = getObjectAnimator(viewA, "x", (int) (smallViewCenterX - viewWidth / 2 + smallViewSize / 2), speedAnim, (long) (speedAnim * pause * 3));
-
-//                ObjectAnimator.ofFloat(viewA, "x", smallViewCenterX - viewWidth / 2 + smallViewSize / 2);
-//        actionBack3.setDuration(speedAnim);
-//        actionBack3.setStartDelay((long) (speedAnim * pause * 3));
-//        actionBack3.addUpdateListener(this);
-
-        ObjectAnimator actionBack4 = getObjectAnimator(viewB, "y", (int) (smallViewCenterY - viewHeight / 2 + smallViewSize / 2), speedAnim, (long) (speedAnim * pause * 4));
-
-//        ObjectAnimator.ofFloat(viewB, "y", smallViewCenterY - viewHeight / 2 + smallViewSize / 2);
-//        actionBack4.setDuration(speedAnim);
-//        actionBack4.setStartDelay((long) (speedAnim * pause * 4));
-//        actionBack4.addUpdateListener(this);
-
-        ObjectAnimator actionBack5 = getObjectAnimator(viewC, "y", (int) viewHeight - smallViewSize, speedAnim, (long) (speedAnim * pause * 5));
-
-//        ObjectAnimator.ofFloat(viewC, "y", viewHeight - smallViewSize);
-//        actionBack5.setDuration(speedAnim);
-//        actionBack5.setStartDelay((long) (speedAnim * pause * 5));
-//        actionBack5.addUpdateListener(this);
-
-        ObjectAnimator actionBack6 = getObjectAnimator(viewD, "x", (int) (smallViewCenterX - viewWidth / 2 + smallViewSize / 2), speedAnim, (long) ( speedAnim * pause * 6.5));
-//                ObjectAnimator.ofFloat(viewD, "x", smallViewCenterX - viewWidth / 2 + smallViewSize / 2);
-//        actionBack6.setDuration(speedAnim);
-//        actionBack6.setStartDelay((long) (speedAnim * pause * 6.5));
-//        actionBack6.addUpdateListener(this);
-
-        ObjectAnimator actionBack7 = getObjectAnimator(viewA, "y", (int) smallViewCenterY - viewHeight / 2 + smallViewSize / 2, speedAnim, (long) (speedAnim * pause * 7.5));
-//                ObjectAnimator.ofFloat(viewA, "y", smallViewCenterY - viewHeight / 2 + smallViewSize / 2);
-//        actionBack7.setDuration(speedAnim);
-//        actionBack7.setStartDelay((long) (speedAnim * pause * 7.5));
-//        actionBack7.addUpdateListener(this);
-
-        ObjectAnimator actionBack8 = getObjectAnimator(viewB, "x", (int) viewWidth - smallViewSize, speedAnim, (long) (speedAnim * pause * 8.5));
-
-//        ObjectAnimator.ofFloat(viewB, "x", viewWidth - smallViewSize);
-//        actionBack8.setDuration(speedAnim);
-//        actionBack8.setStartDelay((long) (speedAnim * pause * 8.5));
-//        actionBack8.addUpdateListener(this);
-
-//        ObjectAnimator alphaAnimEnd = ObjectAnimator.ofFloat(viewE, View.ALPHA, 0.0f, 1.0f, 1.0f);
-//        alphaAnim.setDuration((long) (speedAnim * 2));
-//        alphaAnim.setRepeatCount(4);
-
+        // plays the animation
         AnimatorSet animSet = new AnimatorSet();
-        animSet.play(action1).with(action2).with(action3).with(action4)
-                .with(action5).with(action6).with(action7).with(action8);
-        animSet.play(alphaAnim).before(action1);
-        animSet.play(animA).with(animB).with(animC).with(animD).after(action8);
-        animSet.play(actionBack1).with(actionBack2).with(actionBack3).with(actionBack4)
-                .with(actionBack5).with(actionBack6).with(actionBack7).with(actionBack8).after(animD);
-      //  animSet.play(alphaAnimEnd).after(actionBack8);
-
-      //  animSet.setDuration(speedAnim);
+        animSet.play(cCenterY).with(dCenterX).with(aCenterY).with(bCenterX)
+                .with(cCenterX).with(dCenterY).with(aCenterX).with(bCenterY);
+        animSet.play(eFade).before(cCenterY);
+        animSet.play(aFade).with(bFade).with(cFade).with(dFade).after(bCenterY);
+        animSet.play(cRight).with(dBottom).with(aLeft).with(bTop)
+                .with(cBottom).with(dLeft).with(aTop).with(bRight).after(dFade);
         animSet.addListener(this);
         animSet.start();
     }
 
     @NonNull
-    private ObjectAnimator getObjectAnimatorAlpha(View viewA, float v, float v2) {
-        ObjectAnimator animA = ObjectAnimator.ofFloat(viewA, View.ALPHA, v, v2, v);
+    private ObjectAnimator getObjectAnimatorAlpha(View viewA, float v, float v2, float v3) {
+        ObjectAnimator animA = ObjectAnimator.ofFloat(viewA, View.ALPHA, v, v2, v3);
         animA.setDuration((long) (speedAnim * pause * 6));
         animA.setRepeatCount(3);
         return animA;
     }
 
     @NonNull
-    private ObjectAnimator getObjectAnimator(View viewD, String x, int i, long speedAnim, long startDelay) {
+    private ObjectAnimator getObjectAnimator(View viewD, String x, float i, long startDelay) {
         ObjectAnimator action2 = ObjectAnimator.ofFloat(viewD, x, i);
         action2.setDuration(speedAnim);
         action2.setStartDelay(startDelay);
@@ -364,10 +276,6 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
         canvas.drawLine(startX, startY, endX, endY, pShape);
     }
 
-    private float converter(long delay) {
-        return delay / 1500;
-    }
-
     private void setViews(int viewSize, int alignParentLeft, int alignParentTop, View viewA) {
         LayoutParams lpA = new LayoutParams(viewSize, viewSize);
         lpA.addRule(alignParentLeft);
@@ -388,7 +296,7 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
 
     @Override
     public void onAnimationEnd(Animator animation) {
-        if(runProgress){
+        if (runProgress) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -407,4 +315,5 @@ public class DyingLightProgress extends RelativeLayout implements ValueAnimator.
     public void onAnimationRepeat(Animator animation) {
 
     }
+
 }

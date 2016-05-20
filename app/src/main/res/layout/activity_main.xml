@@ -11,17 +11,12 @@
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     tools:context="com.opalinskiy.ostap.dyinglightprogress.MainActivity">
 
-    <FrameLayout
-        android:layout_width="100dp"
-        android:layout_height="100dp">
-
         <com.opalinskiy.ostap.dyinglightprogress.DyingLightProgress
             custom:viewColor="@color/colorYellow"
             custom:backgroundColor="@color/colorBlack"
             custom:lineStroke="1dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             />
-    </FrameLayout>
 
 </RelativeLayout>
