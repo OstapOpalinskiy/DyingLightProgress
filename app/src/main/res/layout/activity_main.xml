@@ -18,7 +18,7 @@
         <com.opalinskiy.ostap.dyinglightprogress.DyingLightProgress
             custom:viewColor="@color/colorYellow"
             custom:backgroundColor="@color/colorBlack"
-            custom:lineStroke="2dp"
+            custom:lineStroke="1dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
